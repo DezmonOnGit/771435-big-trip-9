@@ -19,6 +19,7 @@ const renderTemplate = (wrapper, content, appendToBegin = false) => {
       } else {
         wrapper.innerHTML += content;
       }
+
       break;
 
     case `object`:
@@ -28,6 +29,12 @@ const renderTemplate = (wrapper, content, appendToBegin = false) => {
       } else {
         wrapper.append(content);
       }
+
+      break;
+
+    default:
+      content = ``;
+      wrapper.append(content);
       break;
   }
 
@@ -36,8 +43,8 @@ const renderTemplate = (wrapper, content, appendToBegin = false) => {
 const createElement = (tag, classes) => {
   let newElement = document.createElement(tag);
 
-  for (let i = 0; i <= classes.length - 1; i++) {
-    newElement.classList.add(classes[i]);
+  for (let classesItem of classes) {
+    newElement.classList.add(classesItem);
   }
   return newElement;
 };
