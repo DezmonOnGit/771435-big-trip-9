@@ -1,50 +1,132 @@
-const tripCardTemplate = `<li class="trip-events__item">
-                            <div class="event">
-                              <div class="event__type">
-                                <img class="event__type-icon" width="42" height="42" src="img/icons/taxi.png" alt="Event type icon">
-                              </div>
-                              <h3 class="event__title">Taxi to airport</h3>
+const makeTripCards = (tripsDay) => {
+  return createTrips(tripsDay.date, tripsDay.dayTrips);
+};
 
-                              <div class="event__schedule">
-                                <p class="event__time">
-                                  <time class="event__start-time" datetime="2019-03-18T10:30">10:30</time>
-                                  &mdash;
-                                  <time class="event__end-time" datetime="2019-03-18T11:00">11:00</time>
-                                </p>
-                                <p class="event__duration">1H 30M</p>
-                              </div>
+const makeTripOffers = (offers) => {
 
-                              <p class="event__price">
-                                &euro;&nbsp;<span class="event__price-value">20</span>
-                              </p>
+  const createOffer = (offer) => {
+    return `<li class="event__offer">
+              <span class="event__offer-title">${offer.name}</span>
+              &plus;
+              &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
+            </li>`;
+  };
 
-                              <h4 class="visually-hidden">Offers:</h4>
-                              <ul class="event__selected-offers">
-                                <li class="event__offer">
-                                  <span class="event__offer-title">Order Uber</span>
-                                  &plus;
-                                  &euro;&nbsp;<span class="event__offer-price">20</span>
-                                 </li>
-                              </ul>
+  let createdOffers = ``;
 
-                              <button class="event__rollup-btn" type="button">
-                                <span class="visually-hidden">Open event</span>
-                              </button>
-                            </div>
-                          </li>`;
+  offers.forEach(function (offersItem) {
+    createdOffers += createOffer(offersItem);
+  });
 
-const tripCardDayTemplate = `<li class="trip-days__item  day">
-                              <div class="day__info">
-                                <span class="day__counter">1</span>
-                                <time class="day__date" datetime="2019-03-18">MAR 18</time>
-                              </div>
-                              <ul class="trip-events__list"></ul>
-                            </li>`;
+  return `<ul class="event__selected-offers">${createdOffers}</ul>`;
+};
 
-const tripInfoTemplate = `<div class="trip-info__main">
-                            <h1 class="trip-info__title">Amsterdam &mdash; ... &mdash; Amsterdam</h1>
-                            <p class="trip-info__dates">Mar 18&nbsp;&mdash;&nbsp;21</p>
-                          </div>`;
+const makeTripDays = (days) => {
+  let createdDays = ``;
+
+  days.forEach(function (daysItem, index) {
+    createdDays += `<li class="trip-days__item  day">
+                      <div class="day__info">
+                        <span class="day__counter">${index + 1}</span>
+                        <time class="day__date" datetime="${daysItem.date.day} ${daysItem.date.month} ${daysItem.date.year}">${daysItem.date.month} ${daysItem.date.day}</time>
+                      </div>
+                      <ul class="trip-events__list">
+                      </ul>
+                    </li>`;
+  });
+
+  return createdDays;
+};
+
+const checkTimeLength = (number) => {
+  number = number.toString();
+
+  if (number.length < 2) {
+    number = `0` + number;
+  }
+
+  return number;
+};
+
+const calcTime = (time) => {
+  const minutesFrom = time.hours.from * 60 + time.minutes.from;
+  const minutesTo = time.hours.to * 60 + time.minutes.to;
+  const deltaHours = Math.floor((minutesTo - minutesFrom) / 60);
+  const deltaMinutes = (minutesTo - minutesFrom) % 60;
+
+  return `${checkTimeLength(deltaHours)}H ${checkTimeLength(deltaMinutes)}M`;
+};
+
+const createTrips = (date, trips) => {
+  let createdTrips = ``;
+
+  trips.forEach(function (tripsItem) {
+    createdTrips += `<li class="trip-events__item">
+                      <div class="event">
+                        <div class="event__type">
+                          <img class="event__type-icon" width="42" height="42" src="${tripsItem.event.img}" alt="Event type icon">
+                        </div>
+                        <h3 class="event__title">${tripsItem.event.name} to ${tripsItem.city}</h3>
+                        <div class="event__schedule">
+                          <p class="event__time">
+                            <time class="event__start-time" datetime="${date.day} ${date.month} ${date.year}">${checkTimeLength(tripsItem.time.hours.from)}:${checkTimeLength(tripsItem.time.minutes.from)}</time>
+                            &mdash;
+                            <time class="event__end-time" datetime="${date.day} ${date.month} ${date.year}">${checkTimeLength(tripsItem.time.hours.to)}:${checkTimeLength(tripsItem.time.minutes.to)}</time>
+                          </p>
+                          <p class="event__duration">${calcTime(tripsItem.time)}</p>
+                        </div>
+
+                        <p class="event__price">
+                          &euro;&nbsp;<span class="event__price-value">${tripsItem.price}</span>
+                        </p>
+
+                        <h4 class="visually-hidden">Offers:</h4>
+                        ${makeTripOffers(tripsItem.offers)}
+                        <button class="event__rollup-btn" type="button">
+                          <span class="visually-hidden">Open event</span>
+                        </button>
+                      </div>
+                    </li>`;
+  });
+
+  return createdTrips;
+};
+
+const maketripInfo = (trips) => {
+  const createTitle = () => {
+    const cities = Array.from(calcCityQty(trips));
+    let createdTitle = ``;
+
+    if (cities.length > 3) {
+      createdTitle = `<h1 class="trip-info__title">${cities[0]} &mdash; ... &mdash; ${cities[cities.length - 1]}</h1>`;
+    } else if (cities.length === 3) {
+      createdTitle = `<h1 class="trip-info__title">${cities[0]} &mdash; ${cities[1]} &mdash; ${cities[2]}</h1>`;
+    } else if (cities.length === 2) {
+      createdTitle = `<h1 class="trip-info__title">${cities[0]} &mdash; ${cities[1]}</h1>`;
+    } else {
+      createdTitle = `<h1 class="trip-info__title">${cities[0]} &mdash; ${cities[0]}</h1>`;
+    }
+
+    return createdTitle;
+  };
+
+  const calcCityQty = () => {
+    let findedCities = new Set();
+
+    trips.forEach(function (tripsItem) {
+      tripsItem.dayTrips.forEach(function (dayTripsItem) {
+        findedCities.add(dayTripsItem.city);
+      });
+    });
+
+    return findedCities;
+  };
+
+  return `<div class="trip-info__main">
+            ${createTitle(trips)}
+            <p class="trip-info__dates">Mar ${trips[0].date.day}&nbsp;&mdash;&nbsp;${trips[trips.length - 1].date.day}</p>
+          </div>`;
+};
 
 const tripCardEditorTemplate = `<form class="trip-events__item  event  event--edit" action="#" method="post">
                             <header class="event__header">
@@ -185,5 +267,5 @@ const tripSortTemplate = `<form class="trip-events__trip-sort  trip-sort" action
                           <span class="trip-sort__item  trip-sort__item--offers">Offers</span>
                         </form>`;
 
-export {tripCardTemplate, tripCardDayTemplate, tripInfoTemplate, tripCardEditorTemplate, tripSortTemplate};
+export {makeTripCards, makeTripDays, maketripInfo, tripCardEditorTemplate, tripSortTemplate};
 
